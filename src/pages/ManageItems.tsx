@@ -17,7 +17,7 @@ const ManageItems = () => {
   // ✅ This will refresh items from backend
   const fetchItems = async (query = '') => {
   try {
-    const res = await fetch(`http://localhost:3001/api/search?q=${encodeURIComponent(query)}`);
+    const res = await fetch(`https://sports-gear-exchange-production.up.railway.app/search?q=${encodeURIComponent(query)}`);
     const data = await res.json();
     setItems(data);
   } catch (error) {
@@ -29,7 +29,7 @@ const ManageItems = () => {
     const confirm = window.confirm('Are you sure you want to delete this item?');
     if (!confirm) return;
 
-    const res = await fetch(`http://localhost:3001/api/items/${id}`, {
+    const res = await fetch(`https://sports-gear-exchange-production.up.railway.app/items/${id}`, {
       method: 'DELETE',
     });
 
