@@ -1,17 +1,32 @@
-// server/utils/firebaseAdmin.js
 import admin from 'firebase-admin';
 
-// ✅ Unescape newline characters in the Firebase key string
-const rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
-const cleanedKey = rawKey.replace(/\\n/g, '\n');
-
-// ✅ Safely parse JSON
-const serviceAccount = JSON.parse(cleanedKey);
-
-if (!admin.apps.length) {
-  admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-  });
+function getServiceAccount() {
+  // For Render environment variables
+  if (process.env.FIREBASE_SERVICE_ACCOUNT_KEY) {
+    try {
+      // Parse the JSON string from environment variable
+      const serviceAccount = JSON.parse(Buffer.from(process.env.FIREBASE_CONFIG_B64, 'base64').toString());
+      
+      // Ensure newlines in private key are properly formatted
+      if (serviceAccount.private_key) {
+        serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, '\n');
+      }
+      
+      return serviceAccount;
+    } catch (error) {
+      console.error('Error parsing Firebase service account:', error);
+      throw error;
+    }
+  }
+  throw new Error('No Firebase configuration found');
 }
 
-export default admin;
+// Initialize only once
+const firebaseApp = !admin.apps.length 
+  ? admin.initializeApp({
+      credential: admin.credential.cert(getServiceAccount())
+    })
+  : admin.app();
+
+console.log('Firebase Admin initialized successfully');
+export default firebaseApp;
